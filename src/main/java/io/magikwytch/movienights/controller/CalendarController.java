@@ -12,6 +12,8 @@ import io.magikwytch.movienights.entity.User;
 import io.magikwytch.movienights.helper.CalendarHelper;
 import io.magikwytch.movienights.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -25,16 +27,16 @@ public class CalendarController {
     @Autowired
     private UserRepository userRepository;
 
-    CalendarHelper calendarHelper = new CalendarHelper();
+    private CalendarHelper calendarHelper = new CalendarHelper();
 
     private String CLIENT_ID = "456752195903-qnk1em5fckgkobmj4lf5ionvb8rc7te4.apps.googleusercontent.com";
     private String CLIENT_SECRET = "5gKlEdTE6Q9i4AKv5t2LhI3F";
 
     @RequestMapping(value = "/storeauthcode", method = RequestMethod.POST)
-    public String storeauthcode(@RequestBody String code, @RequestHeader("X-Requested-With") String encoding) {
+    public ResponseEntity<String> storeauthcode(@RequestBody String code, @RequestHeader("X-Requested-With") String encoding) {
         if (encoding == null || encoding.isEmpty()) {
             // Without the `X-Requested-With` header, this request could be forged. Aborts.
-            return "Error, wrong headers";
+            return new ResponseEntity<>("Error, wrong headers", HttpStatus.BAD_REQUEST);
         }
 
         GoogleTokenResponse tokenResponse = null;
@@ -86,7 +88,7 @@ public class CalendarController {
         User user = new User(userId, givenName, email, refreshToken, accessToken, expiresAt);
         userRepository.save(user);
 
-        return "OK";
+        return new ResponseEntity<>("OK",HttpStatus.OK);
 
     }
 

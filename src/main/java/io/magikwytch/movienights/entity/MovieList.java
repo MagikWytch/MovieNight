@@ -1,25 +1,24 @@
 package io.magikwytch.movienights.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.magikwytch.movienights.entity.Movie;
 
 import java.util.List;
 
 public class MovieList {
 
     @JsonProperty("Search")
-    private List<Movie> movieList;
+    private List<Movie> movies;
 
     public MovieList() {
 
     }
 
-    public List<Movie> getMovieList() {
-        return movieList;
+    public List<Movie> getMovies() {
+        return movies;
     }
 
-    public void setMovieList(List<Movie> movieList) {
-        this.movieList = movieList;
+    public void setMovies(List<Movie> movies) {
+        this.movies = movies;
     }
 
 

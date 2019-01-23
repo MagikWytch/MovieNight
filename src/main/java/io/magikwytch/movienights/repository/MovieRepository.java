@@ -6,5 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface MovieRepository extends JpaRepository<Movie, String> {
 
     Movie findDistinctFirstByTitleIgnoreCase(String Title);
+    Movie findByMovieId(String id);
 
 }

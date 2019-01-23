@@ -2,10 +2,15 @@ package io.magikwytch.movienights.controller;
 
 import io.magikwytch.movienights.entity.Movie;
 import io.magikwytch.movienights.entity.MovieList;
+
 import io.magikwytch.movienights.repository.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/movie")
@@ -13,31 +18,37 @@ public class MovieController {
 
     @Autowired
     private MovieRepository movieRepository;
-
-    private String key = "972c6b98";
     private RestTemplate restTemplate = new RestTemplate();
+    private String omdbURL = "https://www.omdbapi.com/?apikey=972c6b98";
 
-    /*@RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
-    public @ResponseBody Movie getMovieById(@PathVariable("id") String id) {
-        return restTemplate.getForObject("https://www.omdbapi.com/?apikey=" + key + "&i=" + id, Movie.class);
-    }*/
+    @RequestMapping(value = "/id/{id}", method = RequestMethod.GET)
+    public @ResponseBody
+    ResponseEntity<Movie> getMovieById(@PathVariable("id") String id) {
 
-    @RequestMapping(value = "/title/{title}", method = RequestMethod.GET)
-    public Movie getMovieByTitle(@PathVariable("title") String title) {
-
-        if (movieRepository.findDistinctFirstByTitleIgnoreCase(title) == null) {
-            Movie movie = restTemplate.getForObject("https://www.omdbapi.com/?apikey=" + key + "&t=" + title, Movie.class);
+        if (movieRepository.findByMovieId(id) == null) {
+            Movie movie = restTemplate.getForObject(omdbURL + "&i=" + id, Movie.class);
+            if (movie == null) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
             movieRepository.save(movie);
-            return movie;
         }
 
-        return movieRepository.findDistinctFirstByTitleIgnoreCase(title);
+        return new ResponseEntity<>(movieRepository.findByMovieId(id), HttpStatus.OK);
+
     }
 
-    @RequestMapping(value = "/search/{keyword}", method = RequestMethod.GET)
+    @RequestMapping(value = "/search/{key}", method = RequestMethod.GET)
     public @ResponseBody
-    MovieList searchMovieByKeyword(@PathVariable("keyword") String keyword) {
-        return restTemplate.getForObject("https://www.omdbapi.com/?apikey=" + key + "&s=" + keyword, MovieList.class);
+    ResponseEntity<List<Movie>> getMoviesByTitle(@PathVariable("key") String key) {
+
+        MovieList responseList = restTemplate.getForObject(omdbURL + "&s=" + key, MovieList.class);
+        if(responseList == null){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        List<Movie> movies = responseList.getMovies();
+
+        return new ResponseEntity<>(movies, HttpStatus.OK);
     }
 
 
