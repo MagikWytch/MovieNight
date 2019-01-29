@@ -9,11 +9,9 @@ import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
-import io.magikwytch.movienights.entity.CalendarEvent;
-import io.magikwytch.movienights.entity.User;
+import io.magikwytch.movienights.domain.entity.User;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 

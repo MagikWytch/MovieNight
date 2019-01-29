@@ -1,6 +1,7 @@
-package io.magikwytch.movienights.entity;
+package io.magikwytch.movienights.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.magikwytch.movienights.domain.entity.Movie;
 
 import java.util.List;
 

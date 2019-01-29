@@ -1,4 +1,4 @@
-package io.magikwytch.movienights.entity;
+package io.magikwytch.movienights.domain;
 
 import com.google.api.client.util.DateTime;
 

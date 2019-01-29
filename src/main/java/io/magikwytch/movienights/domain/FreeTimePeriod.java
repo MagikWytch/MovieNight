@@ -1,4 +1,4 @@
-package io.magikwytch.movienights.entity;
+package io.magikwytch.movienights.domain;
 
 import java.time.LocalDateTime;
 

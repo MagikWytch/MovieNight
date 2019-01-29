@@ -1,4 +1,4 @@
-package io.magikwytch.movienights.entity;
+package io.magikwytch.movienights.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

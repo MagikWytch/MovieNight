@@ -1,4 +1,4 @@
-package io.magikwytch.movienights.entity;
+package io.magikwytch.movienights.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,30 +12,36 @@ public class Movie {
 
     @Id
     @JsonProperty("imdbID")
-    private String id;
+    private String imdbId;
     @JsonProperty("Title")
     private String title;
     @JsonProperty("Year")
     private String year;
+    @JsonProperty("Plot")
+    private String plot;
+    @JsonProperty("Runtime")
+    private String runtime;
     @JsonProperty("Poster")
     private String poster;
 
     private Movie() {
     }
 
-    public Movie(String id, String title, String year, String poster) {
-        this.id = id;
+    public Movie(String imdbId, String title, String year, String plot, String runtime, String poster) {
+        this.imdbId = imdbId;
         this.title = title;
         this.year = year;
+        this.plot = plot;
+        this.runtime = runtime;
         this.poster = poster;
     }
 
-    public String getId() {
-        return id;
+    public String getImdbId() {
+        return imdbId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setImdbId(String imdbId) {
+        this.imdbId = imdbId;
     }
 
     public String getTitle() {
@@ -52,6 +58,22 @@ public class Movie {
 
     public void setYear(String year) {
         this.year = year;
+    }
+
+    public String getPlot() {
+        return plot;
+    }
+
+    public void setPlot(String plot) {
+        this.plot = plot;
+    }
+
+    public String getRuntime() {
+        return runtime;
+    }
+
+    public void setRuntime(String runtime) {
+        this.runtime = runtime;
     }
 
     public String getPoster() {

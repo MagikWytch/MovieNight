@@ -1,7 +1,7 @@
 package io.magikwytch.movienights.controller;
 
-import io.magikwytch.movienights.entity.Movie;
-import io.magikwytch.movienights.entity.MovieList;
+import io.magikwytch.movienights.domain.entity.Movie;
+import io.magikwytch.movienights.domain.MovieList;
 
 import io.magikwytch.movienights.repository.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class MovieController {
     public @ResponseBody
     ResponseEntity<Movie> getMovieById(@PathVariable("id") String id) {
 
-        if (movieRepository.findByMovieId(id) == null) {
+        if (movieRepository.findByImdbId(id) == null) {
             Movie movie = restTemplate.getForObject(omdbURL + "&i=" + id, Movie.class);
             if (movie == null) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -33,7 +33,7 @@ public class MovieController {
             movieRepository.save(movie);
         }
 
-        return new ResponseEntity<>(movieRepository.findByMovieId(id), HttpStatus.OK);
+        return new ResponseEntity<>(movieRepository.findByImdbId(id), HttpStatus.OK);
 
     }
 
@@ -41,15 +41,13 @@ public class MovieController {
     public @ResponseBody
     ResponseEntity<List<Movie>> getMoviesByTitle(@PathVariable("key") String key) {
 
-        MovieList responseList = restTemplate.getForObject(omdbURL + "&s=" + key, MovieList.class);
-        if(responseList == null){
+        MovieList response = restTemplate.getForObject(omdbURL + "&s=" + key, MovieList.class);
+        if (response == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        List<Movie> movies = responseList.getMovies();
+        List<Movie> movies = response.getMovies();
 
         return new ResponseEntity<>(movies, HttpStatus.OK);
     }
-
-
 }
