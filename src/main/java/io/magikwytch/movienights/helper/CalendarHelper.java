@@ -73,7 +73,7 @@ public class CalendarHelper {
         return events.getItems();
     }
 
-    public boolean timeIsFree(LocalDateTime startParamater, LocalDateTime endParamater, List<Event> events) {
+    public boolean timeIsFree(LocalDateTime startParameter, LocalDateTime endParameter, List<Event> events) {
         if (events.size() == 0) {
             return true;
         }
@@ -84,9 +84,9 @@ public class CalendarHelper {
 
             if (start == null || end == null) {
                 return false;
-            } else if (start.isAfter(startParamater) && start.isBefore(endParamater)) {
+            } else if (start.isAfter(startParameter) && start.isBefore(endParameter)) {
                 return false;
-            } else if (end.isAfter(startParamater) && end.isBefore(endParamater)) {
+            } else if (end.isAfter(startParameter) && end.isBefore(endParameter)) {
                 return false;
             }
         }

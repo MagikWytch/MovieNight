@@ -107,15 +107,15 @@ public class CalendarController {
             }
         }
 
-        LocalDateTime movieNightStartParamater = LocalDate.now().atTime(18, 0);
-        LocalDateTime movieNightEndParamater = LocalDate.now().atTime(23, 0);
+        LocalDateTime movieNightStartParameter = LocalDate.now().atTime(18, 0);
+        LocalDateTime movieNightEndParameter = LocalDate.now().atTime(23, 0);
 
         for (int i = 0; i < 7; i++) {
-            movieNightStartParamater = movieNightStartParamater.plusDays(1);
-            movieNightEndParamater = movieNightEndParamater.plusDays(1);
+            movieNightStartParameter = movieNightStartParameter.plusDays(1);
+            movieNightEndParameter = movieNightEndParameter.plusDays(1);
 
-            if (calendarHelper.timeIsFree(movieNightStartParamater, movieNightEndParamater, events)) {
-                freeTimes.add(new FreeTimePeriod(movieNightStartParamater, movieNightEndParamater));
+            if (calendarHelper.timeIsFree(movieNightStartParameter, movieNightEndParameter, events)) {
+                freeTimes.add(new FreeTimePeriod(movieNightStartParameter, movieNightEndParameter));
             }
         }
 
