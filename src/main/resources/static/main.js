@@ -35,7 +35,7 @@ function signInCallback(authResult) {
             },
             contentType: 'application/octet-stream; charset=utf-8',
             success: function (result) {
-                // Handle or verify the server response.
+                console.log("Result is: ", result);
             },
             processData: false,
             data: authResult['code']
@@ -113,7 +113,56 @@ function signInCallback(authResult) {
     }
 
     function getOneMovie(id) {
+        $.ajax({
+            type: 'GET',
+            url: 'http://localhost:8080/movie/id/' + id,
+            // Always include an `X-Requested-With` header in every AJAX request,
+            // to protect against CSRF attacks.
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            contentType: 'application/octet-stream; charset=utf-8',
+            success: function (result) {
+                displayOneMovie(result);
+            },
+            error: function (result) {
+                console.log("error" + result.httpRequestStatusCode)
+            },
+            processData: false,
+        });
 
+    }
+
+    function displayOneMovie(movie) {
+        $('#movie-box').empty();
+
+        let newMovieView = createNewMovieDisplayView(movie);
+        $('#movie-box').append(newMovieView);
+    }
+
+    function createNewMovieDisplayView(movie) {
+
+        let movieView = $(`
+        
+        <img src="${movie.Poster}">
+        <h3>${movie.Title} ${movie.Year}</h3>
+        <p>${movie.Runtime}</p>
+        <p>${movie.Plot}</p>
+        <button type="button" class='select-movie'>Select movie</button>
+             
+          `);
+
+
+        $(document).on('click', '.select-movie', () => {
+
+            let movieTitle = movie.Title;
+            let movieRuntime = movie.Runtime;
+            $('#movie-box').empty();
+
+            $('#movie-box').append(`<p>${movie.Title} ${movie.Year} has been selected</p>`);
+        });
+
+        return movieView;
     }
 
 }

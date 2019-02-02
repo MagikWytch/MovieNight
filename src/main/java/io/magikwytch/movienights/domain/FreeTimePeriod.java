@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 public class FreeTimePeriod {
 
-    LocalDateTime start;
-    LocalDateTime end;
+    private LocalDateTime start;
+    private LocalDateTime end;
 
     public FreeTimePeriod() {
     }

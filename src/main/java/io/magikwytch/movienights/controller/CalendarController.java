@@ -87,13 +87,12 @@ public class CalendarController {
         User user = new User(userId, givenName, email, refreshToken, accessToken, expiresAt);
         userRepository.save(user);
 
-        return new ResponseEntity<>("OK",HttpStatus.OK);
+        return new ResponseEntity<>("OK", HttpStatus.OK);
 
     }
 
     @RequestMapping(value = "/getFreeTime", method = RequestMethod.GET)
     private List<FreeTimePeriod> getFreeTime() {
-
         List<FreeTimePeriod> freeTimes = new ArrayList<>();
         List<Event> events = new ArrayList<>();
 
@@ -108,33 +107,22 @@ public class CalendarController {
             }
         }
 
-        LocalDateTime localStartTime = LocalDate.now().atTime(18, 0);
-        LocalDateTime localEndTime = LocalDate.now().atTime(23, 59);
+        LocalDateTime movieNightStartParamater = LocalDate.now().atTime(18, 0);
+        LocalDateTime movieNightEndParamater = LocalDate.now().atTime(23, 0);
 
+        for (int i = 0; i < 7; i++) {
+            movieNightStartParamater = movieNightStartParamater.plusDays(1);
+            movieNightEndParamater = movieNightEndParamater.plusDays(1);
 
-        if (events.size() == 0) {
-
-        }
-
-        for (Event event : events) {
-
-
-            DateTime start = event.getStart().getDateTime();
-            if (start == null) {
-                start = event.getStart().getDate();
+            if (calendarHelper.timeIsFree(movieNightStartParamater, movieNightEndParamater, events)) {
+                freeTimes.add(new FreeTimePeriod(movieNightStartParamater, movieNightEndParamater));
             }
-
-            DateTime end = event.getEnd().getDateTime();
-            if (end == null) {
-                end = event.getStart().getDate();
-            }
-
-
         }
-
 
         return freeTimes;
     }
+
+
 
     /*@RequestMapping(value = "/createEvent", method = RequestMethod.POST)
     private EventAttendee[] bookMovieNight() {
@@ -152,3 +140,5 @@ public class CalendarController {
 
 
 }
+
+

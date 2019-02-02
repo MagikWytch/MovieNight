@@ -12,7 +12,10 @@ import com.google.api.services.calendar.model.Events;
 import io.magikwytch.movienights.domain.entity.User;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class CalendarHelper {
@@ -47,16 +50,15 @@ public class CalendarHelper {
     public List<Event> getEvents(Calendar calendar) {
 
         int days = 7;
-        int millisInADay = 86400000;
-
+        int millisPerDay = 86400000;
         DateTime now = new DateTime(System.currentTimeMillis());
-        DateTime oneWeekInTheFutureFromNow = new DateTime(System.currentTimeMillis() + days * millisInADay);
+        DateTime oneWeekFromNow = new DateTime(System.currentTimeMillis() + days * millisPerDay);
+
         Events events = null;
         try {
             events = calendar.events().list("primary")
-                    .setMaxResults(10)
                     .setTimeMin(now)
-                    .setTimeMax(oneWeekInTheFutureFromNow)
+                    .setTimeMax(oneWeekFromNow)
                     .setOrderBy("startTime")
                     .setSingleEvents(true)
                     .execute();
@@ -69,5 +71,35 @@ public class CalendarHelper {
         }
 
         return events.getItems();
+    }
+
+    public boolean timeIsFree(LocalDateTime startParamater, LocalDateTime endParamater, List<Event> events) {
+        if (events.size() == 0) {
+            return true;
+        }
+
+        for (Event event : events) {
+            LocalDateTime start = getDateTime(event.getStart().getDateTime());
+            LocalDateTime end = getDateTime(event.getEnd().getDateTime());
+
+            if (start == null || end == null) {
+                return false;
+            } else if (start.isAfter(startParamater) && start.isBefore(endParamater)) {
+                return false;
+            } else if (end.isAfter(startParamater) && end.isBefore(endParamater)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static LocalDateTime getDateTime(DateTime dateTime) {
+        try {
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            return LocalDateTime.parse(dateTime.toStringRfc3339(), format);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
