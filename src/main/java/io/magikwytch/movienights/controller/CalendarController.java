@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
+@RequestMapping("/calendar")
 public class CalendarController {
     @Autowired
     private UserRepository userRepository;
@@ -92,17 +93,16 @@ public class CalendarController {
     }
 
     @RequestMapping(value = "/getFreeTime", method = RequestMethod.GET)
-    private List<FreeTimePeriod> getFreeTime() {
-        List<FreeTimePeriod> freeTimes = new ArrayList<>();
+    public List<LocalDateTime> getFreeTime() {
+        List<LocalDateTime> freeTimes = new ArrayList<>();
         List<Event> events = new ArrayList<>();
 
-        List<User> users = userRepository.findAll();
+        List<User> users = userRepository.getAllByUserIDNotNull();
         for (User user : users) {
-
             Calendar calendar = calendarHelper.getUserCalendar(user);
             List<Event> userEvent = calendarHelper.getEvents(calendar);
 
-            if (userEvent.size() > 0) {
+            if (userEvent != null) {
                 events.addAll(userEvent);
             }
         }
@@ -115,10 +115,9 @@ public class CalendarController {
             movieNightEndParameter = movieNightEndParameter.plusDays(1);
 
             if (calendarHelper.timeIsFree(movieNightStartParameter, movieNightEndParameter, events)) {
-                freeTimes.add(new FreeTimePeriod(movieNightStartParameter, movieNightEndParameter));
+                freeTimes.add(movieNightStartParameter);
             }
         }
-
         return freeTimes;
     }
 

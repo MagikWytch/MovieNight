@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Movie Night</title>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
@@ -17,13 +17,15 @@
 <button id="signinButton">Link my Google Calendar</button>
 
 
-<h3>Choose date and time to book Movie Night:</h3>
+<h3>Search and choose a Movie:</h3>
+<input id="movie-search-value" type="text" placeholder="Ex. Titanic">
+<button id="search-for-movie-button" type="button">Search</button>
+<div id="movie-box"></div>
+
+
+<h3>Choose what day:</h3>
 <div id="free-time-box"></div>
 
-<h3>Search and choose a Movie:</h3>
-<input type="text" id="movie-search-value" placeholder="Ex. Titanic">
-<button type="submit" id="search-for-movie-button">Sök</button>
-<div id="movie-box"></div>
 
 <h3>Book your Movie Night!</h3>
 

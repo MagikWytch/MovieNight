@@ -19,9 +19,26 @@ import java.util.Date;
 import java.util.List;
 
 public class CalendarHelper {
+    private String CLIENT_ID = "456752195903-qnk1em5fckgkobmj4lf5ionvb8rc7te4.apps.googleusercontent.com";
+    private String CLIENT_SECRET = "5gKlEdTE6Q9i4AKv5t2LhI3F";
 
+    public void refreshToken(User user) {
+        Long expiresAt = user.getAccessTokenExpiration();
+        Long currentTime = System.currentTimeMillis();
 
-    public GoogleCredential getRefreshedCredentials(String refreshCode, String CLIENT_ID, String CLIENT_SECRET) {
+        if (expiresAt > currentTime) {
+            GoogleCredential credential = getRefreshedCredentials(user.getRefreshToken());
+            String newAccessToken = credential.getAccessToken();
+
+            user.setAccessToken(newAccessToken);
+            user.setAccessTokenExpiration(System.currentTimeMillis() + credential.getExpirationTimeMilliseconds());
+        }
+
+        System.out.println("New Access Token" + user.getAccessToken());
+        System.out.println("New Expire Time" + user.getAccessTokenExpiration());
+    }
+
+    public GoogleCredential getRefreshedCredentials(String refreshCode) {
         try {
             GoogleTokenResponse response = new GoogleRefreshTokenRequest(
                     new NetHttpTransport(), JacksonFactory.getDefaultInstance(), refreshCode, CLIENT_ID, CLIENT_SECRET)
@@ -36,6 +53,8 @@ public class CalendarHelper {
     }
 
     public Calendar getUserCalendar(User user) {
+        System.out.println(user.getName() + "Inside get calendar");
+        refreshToken(user);
 
         // Use an accessToken previously gotten to call Google's API
         GoogleCredential credential = new GoogleCredential().setAccessToken(user.getAccessToken());
@@ -82,7 +101,9 @@ public class CalendarHelper {
             LocalDateTime start = getDateTime(event.getStart().getDateTime());
             LocalDateTime end = getDateTime(event.getEnd().getDateTime());
 
-            if (start == null || end == null) {
+            if (event.getStart().getDateTime().isDateOnly()) {
+                return false;
+            } else if (start == null || end == null) {
                 return false;
             } else if (start.isAfter(startParameter) && start.isBefore(endParameter)) {
                 return false;
@@ -95,7 +116,7 @@ public class CalendarHelper {
 
     private static LocalDateTime getDateTime(DateTime dateTime) {
         try {
-            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+            DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS+01:00");
             return LocalDateTime.parse(dateTime.toStringRfc3339(), format);
         } catch (Exception e) {
             e.printStackTrace();

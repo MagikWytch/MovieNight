@@ -4,38 +4,38 @@ import java.time.LocalDateTime;
 
 public class FreeTimePeriod {
 
-    private LocalDateTime start;
-    private LocalDateTime end;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
 
     public FreeTimePeriod() {
     }
 
-    public FreeTimePeriod(LocalDateTime start, LocalDateTime end) {
-        this.start = start;
-        this.end = end;
+    public FreeTimePeriod(LocalDateTime startTime, LocalDateTime endTime) {
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
-    public LocalDateTime getStart() {
-        return start;
+    public LocalDateTime getStartTime() {
+        return startTime;
     }
 
-    public void setStart(LocalDateTime start) {
-        this.start = start;
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
     }
 
-    public LocalDateTime getEnd() {
-        return end;
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
-    public void setEnd(LocalDateTime end) {
-        this.end = end;
+    public void setEndTIme(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     @Override
     public String toString() {
         return "FreeTimePeriod{" +
-                "start=" + start +
-                ", end=" + end +
+                "start=" + startTime +
+                ", end=" + endTime +
                 '}';
     }
 }
