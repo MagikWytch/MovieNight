@@ -174,14 +174,36 @@ function getFreeTimes() {
             addFreeTimesToList(result);
         },
         error: function (result) {
-           // console.log("error" + result.httpRequestStatusCode)
+            // console.log("error" + result.httpRequestStatusCode)
         },
         processData: false,
     });
 }
 
 function addFreeTimesToList(result) {
-    console.log("Inside add free times");
-    result.forEach(time => $('#free-time-box').append(`<li><a href="#">${time}</a></li>`));
+    $('#free-time-box').empty();
+
+    for (let time of result) {
+        let newTime = createNewTimeItem(time);
+        $('#free-time-box').append(newTime);
+    }
 }
 
+function createNewTimeItem(time){
+
+    let timeItem = $(`
+        <li>
+            <a href="#">
+                ${time}
+            </a>
+        </li>`);
+
+    timeItem.on('click', () =>{
+        let startTime = time;
+
+        $('#free-time-box').empty();
+        $('#free-time-box').append(`<p>${time} has been selected</p>`);
+    });
+
+    return timeItem;
+}

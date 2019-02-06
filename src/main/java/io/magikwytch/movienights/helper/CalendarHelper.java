@@ -1,3 +1,4 @@
+/*
 package io.magikwytch.movienights.helper;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -10,38 +11,45 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.Events;
 import io.magikwytch.movienights.domain.entity.User;
+import io.magikwytch.movienights.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class CalendarHelper {
+    @Autowired
+    UserRepository userRepository;
+
     private String CLIENT_ID = "456752195903-qnk1em5fckgkobmj4lf5ionvb8rc7te4.apps.googleusercontent.com";
     private String CLIENT_SECRET = "5gKlEdTE6Q9i4AKv5t2LhI3F";
 
-    public void refreshToken(User user) {
+    public User refreshToken(User user) {
         Long expiresAt = user.getAccessTokenExpiration();
         Long currentTime = System.currentTimeMillis();
 
-        if (expiresAt > currentTime) {
+        if (expiresAt < currentTime) {
             GoogleCredential credential = getRefreshedCredentials(user.getRefreshToken());
-            String newAccessToken = credential.getAccessToken();
+            String accessToken = credential.getAccessToken();
 
-            user.setAccessToken(newAccessToken);
-            user.setAccessTokenExpiration(System.currentTimeMillis() + credential.getExpirationTimeMilliseconds());
+            user.setAccessToken(accessToken);
+            user.setAccessTokenExpiration(currentTime + 3600000);
+
+            userRepository.findByUserID(user.getUserID()).setAccessToken(accessToken);
+            //userRepository.findByUserID(user.getUserID()).setAccessTokenExpiration(currentTime + 3600000);
         }
-
-        System.out.println("New Access Token" + user.getAccessToken());
-        System.out.println("New Expire Time" + user.getAccessTokenExpiration());
+        return user;
     }
 
     public GoogleCredential getRefreshedCredentials(String refreshCode) {
         try {
             GoogleTokenResponse response = new GoogleRefreshTokenRequest(
-                    new NetHttpTransport(), JacksonFactory.getDefaultInstance(), refreshCode, CLIENT_ID, CLIENT_SECRET)
+                    new NetHttpTransport(), JacksonFactory.getDefaultInstance(), refreshCode,
+                    CLIENT_ID,
+                    CLIENT_SECRET)
                     .execute();
 
             return new GoogleCredential().setAccessToken(response.getAccessToken());
@@ -49,15 +57,14 @@ public class CalendarHelper {
             ex.printStackTrace();
             return null;
         }
-
     }
 
     public Calendar getUserCalendar(User user) {
-        System.out.println(user.getName() + "Inside get calendar");
-        refreshToken(user);
+
+        User googleUser = refreshToken(user);
 
         // Use an accessToken previously gotten to call Google's API
-        GoogleCredential credential = new GoogleCredential().setAccessToken(user.getAccessToken());
+        GoogleCredential credential = new GoogleCredential().setAccessToken(googleUser.getAccessToken());
         Calendar calendar =
                 new Calendar.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance(), credential)
                         .setApplicationName("Movie Nights")
@@ -124,3 +131,4 @@ public class CalendarHelper {
         }
     }
 }
+*/
