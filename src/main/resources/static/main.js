@@ -1,5 +1,9 @@
 const CLIENT_ID = "456752195903-qnk1em5fckgkobmj4lf5ionvb8rc7te4.apps.googleusercontent.com";
 
+let movieTitle;
+let movieRuntime;
+let sTime;
+let eTime;
 
 function start() {
     gapi.load('auth2', function () {
@@ -46,7 +50,12 @@ function signInCallback(authResult) {
 
 $('#search-for-movie-button').on('click', () => {
     let key = $('#movie-search-value').val();
-    searchForMovies(key);
+    if (key != null) {
+        searchForMovies(key);
+    } else {
+        $('#movie-box').empty();
+        $('#movie-box').append('<p>Movie could not be found!</p>');
+    }
 });
 
 function searchForMovies(key) {
@@ -149,8 +158,8 @@ function createNewMovieDisplayView(movie) {
 
 
     $(document).on('click', '.select-movie', () => {
-        let movieTitle = movie.Title;
-        let movieRuntime = movie.Runtime;
+        movieTitle = movie.Title;
+        movieRuntime = movie.Runtime;
 
         $('#movie-box').empty();
         $('#movie-box').append(`<p>${movie.Title} ${movie.Year} has been selected</p>`);
@@ -189,21 +198,57 @@ function addFreeTimesToList(result) {
     }
 }
 
-function createNewTimeItem(time){
+function createNewTimeItem(time) {
 
     let timeItem = $(`
         <li>
             <a href="#">
-                ${time}
+                ${time.startTime}
             </a>
         </li>`);
 
-    timeItem.on('click', () =>{
-        let startTime = time;
+    timeItem.on('click', () => {
+        sTime = time.startTime;
+        eTime = time.endTime;
 
         $('#free-time-box').empty();
-        $('#free-time-box').append(`<p>${time} has been selected</p>`);
+        $('#free-time-box').append(`<p>${time.startTime} has been selected</p>`);
     });
 
     return timeItem;
 }
+
+$('#book-movie-night').on('click', () => {
+
+    $('#book-movie-box').empty();
+
+    if (movieTitle != null && movieRuntime != null && sTime != null && eTime != null){
+
+    $.ajax({
+        type: 'POST',
+        url: 'http://localhost:8080/calendar/bookMovieNight/' + movieTitle + '/' + movieRuntime + '/' + sTime + '/' + eTime,
+        // Always include an `X-Requested-With` header in every AJAX request,
+        // to protect against CSRF attacks.
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        contentType: 'application/octet-stream; charset=utf-8',
+        success: function (result) {
+
+        },
+        error: function (result) {
+            //console.log("error" + result.httpRequestStatusCode)
+        },
+        processData: false,
+    });
+    } else {
+        printCreateEventErrorMessage()
+    }
+});
+
+function printCreateEventErrorMessage() {
+    let eventErrorMessage = (`<p>You must select movie and time!</p>`);
+    $('#book-movie-box').append(eventErrorMessage);
+}
+
+

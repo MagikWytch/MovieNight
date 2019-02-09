@@ -5,8 +5,8 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.Events;
+import com.google.api.services.calendar.model.*;
+import io.magikwytch.movienights.domain.FreeTimePeriod;
 import io.magikwytch.movienights.domain.entity.User;
 import io.magikwytch.movienights.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +19,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/calendar")
 public class CalendarController {
+
     @Autowired
     private UserRepository userRepository;
 
@@ -54,7 +56,6 @@ public class CalendarController {
             e.printStackTrace();
         }
 
-
         // Store these 3in your DB
         String accessToken = tokenResponse.getAccessToken();
         String refreshToken = tokenResponse.getRefreshToken();
@@ -80,17 +81,77 @@ public class CalendarController {
         String email = payload.getEmail();
         String givenName = (String) payload.get("given_name");
 
-            User user = new User(userId, givenName, email, refreshToken, accessToken, expiresAt);
-            userRepository.save(user);
+        User user = new User(userId, givenName, email, refreshToken, accessToken, expiresAt);
+        userRepository.save(user);
 
 
         return new ResponseEntity<>("OK", HttpStatus.OK);
 
     }
 
+
+    @RequestMapping(value = "/bookMovieNight/{movieTitle}/{movieRuntime}/{sTime}/{eTime}", method = RequestMethod.POST)
+    public ResponseEntity<String> bookMovieNight(
+            @PathVariable("movieTitle") String movieTitle,
+            @PathVariable("movieRuntime") String movieRuntime,
+            @PathVariable("sTime") String sTime,
+            @PathVariable("eTime") String eTime) throws IOException {
+
+
+        System.out.println("I AM INSIDE BOOK MOVIE NIGHT");
+       /* List<User> users = userRepository.getAllByUserIDNotNull();
+
+        DateTime start = DateTime.parseRfc3339(sTime);
+
+        DateTime end = DateTime.parseRfc3339(eTime);
+
+        Event event = setEventDetails(movieTitle, movieRuntime, start, end);
+
+        event.setAttendees(setEventAttendees(users));
+
+        String calendarId = "primary";
+        for (User user : users) {
+            Calendar calendar = getUserCalendar(user);
+            event = calendar.events()
+                    .insert(calendarId, event)
+                    .execute();
+        }*/
+
+        return new ResponseEntity<>("OK", HttpStatus.OK);
+    }
+
+
+    private Event setEventDetails(String movieTitle, String movieRuntime, DateTime startTime, DateTime endTime) {
+        Event event = new Event();
+
+        event.setSummary("Movie : " + movieTitle + ", " + movieRuntime)
+                .setDescription("You are invited to a movie night with your friends.");
+
+        EventDateTime start = new EventDateTime()
+                .setDateTime(startTime)
+                .setTimeZone("Sweden/Stockholm");
+        event.setStart(start);
+
+        EventDateTime end = new EventDateTime()
+                .setDateTime(endTime)
+                .setTimeZone("Sweden/Stockholm");
+        event.setEnd(end);
+
+        return event;
+    }
+
+    private List<EventAttendee> setEventAttendees(List<User> users) {
+
+        List<EventAttendee> attendees = new ArrayList<>();
+        for (User user : users) {
+            attendees.add(new EventAttendee().setEmail(user.getUserEmail()));
+        }
+        return attendees;
+    }
+
     @RequestMapping(value = "/getFreeTime", method = RequestMethod.GET)
-    public List<LocalDateTime> getFreeTime() {
-        List<LocalDateTime> freeTimes = new ArrayList<>();
+    public List<FreeTimePeriod> getFreeTime() {
+        List<FreeTimePeriod> freeTimes = new ArrayList<>();
         List<Event> events = new ArrayList<>();
 
         List<User> users = userRepository.getAllByUserIDNotNull();
@@ -98,7 +159,7 @@ public class CalendarController {
             Calendar calendar = getUserCalendar(user);
             List<Event> userEvent = getEvents(calendar);
 
-            if (userEvent != null) {
+            if (userEvent != null || userEvent.size() != 0) {
                 events.addAll(userEvent);
             }
         }
@@ -107,46 +168,16 @@ public class CalendarController {
         LocalDateTime movieNightEndParameter = LocalDate.now().atTime(23, 0);
 
         for (int i = 0; i < 7; i++) {
+
             movieNightStartParameter = movieNightStartParameter.plusDays(1);
             movieNightEndParameter = movieNightEndParameter.plusDays(1);
 
             if (timeIsFree(movieNightStartParameter, movieNightEndParameter, events)) {
-                freeTimes.add(movieNightStartParameter);
+                freeTimes.add(new FreeTimePeriod(movieNightStartParameter, movieNightEndParameter));
             }
+
         }
         return freeTimes;
-    }
-
-    public User refreshToken(User user) {
-        Long expiresAt = user.getAccessTokenExpiration();
-        Long currentTime = System.currentTimeMillis();
-
-        if (expiresAt < currentTime) {
-            GoogleCredential credential = getRefreshedCredentials(user.getRefreshToken());
-            String accessToken = credential.getAccessToken();
-
-            user.setAccessToken(accessToken);
-            user.setAccessTokenExpiration(currentTime + 3600000);
-
-            userRepository.save(user);
-        }
-
-        return user;
-    }
-
-    public GoogleCredential getRefreshedCredentials(String refreshCode) {
-        try {
-            GoogleTokenResponse response = new GoogleRefreshTokenRequest(
-                    new NetHttpTransport(), JacksonFactory.getDefaultInstance(), refreshCode,
-                    CLIENT_ID,
-                    CLIENT_SECRET)
-                    .execute();
-
-            return new GoogleCredential().setAccessToken(response.getAccessToken());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
-        }
     }
 
     public Calendar getUserCalendar(User user) {
@@ -189,29 +220,42 @@ public class CalendarController {
         return events.getItems();
     }
 
-    public boolean timeIsFree(LocalDateTime startParameter, LocalDateTime endParameter, List<Event> events) {
+    public Boolean timeIsFree(LocalDateTime startParameter, LocalDateTime endParameter, List<Event> events) {
         if (events.size() == 0) {
             return true;
         }
 
-        for (Event event : events) {
-            LocalDateTime start = getDateTime(event.getStart().getDateTime());
-            LocalDateTime end = getDateTime(event.getEnd().getDateTime());
 
-            if (event.getStart().getDateTime().isDateOnly()) {
-                return false;
-            } else if (start == null || end == null) {
-                return false;
-            } else if (start.isAfter(startParameter) && start.isBefore(endParameter)) {
+        for (Event event : events) {
+
+            LocalDateTime start;
+            LocalDateTime end;
+
+            DateTime nullIfDateOnly = event.getStart().getDateTime();
+            if (nullIfDateOnly == null) {
+                String addTimeStartToDate = String.format("%sT00:00:00.000+01:00", event.getStart().getDate());
+                String addTimeEndToDate = String.format("%sT23:59:59.000+01:00", event.getStart().getDate());
+                DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS+01:00");
+                start = LocalDateTime.parse(addTimeStartToDate, format);
+                end = LocalDateTime.parse(addTimeEndToDate, format);
+            } else {
+                start = convertToLocalDate(event.getStart().getDateTime());
+                end = convertToLocalDate(event.getEnd().getDateTime());
+            }
+
+            if (start.isAfter(startParameter) && start.isBefore(endParameter)) {
                 return false;
             } else if (end.isAfter(startParameter) && end.isBefore(endParameter)) {
+                return false;
+            } else if (start.isBefore(startParameter) && end.isAfter(endParameter)) {
                 return false;
             }
         }
         return true;
+
     }
 
-    private static LocalDateTime getDateTime(DateTime dateTime) {
+    private static LocalDateTime convertToLocalDate(DateTime dateTime) {
         try {
             DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS+01:00");
             return LocalDateTime.parse(dateTime.toStringRfc3339(), format);
@@ -221,22 +265,37 @@ public class CalendarController {
         }
     }
 
+    public User refreshToken(User user) {
+        Long expiresAt = user.getAccessTokenExpiration();
+        Long currentTime = System.currentTimeMillis();
 
-    /*@RequestMapping(value = "/createEvent", method = RequestMethod.POST)
-    private EventAttendee[] bookMovieNight() {
-        //movie?=batman+begins
-        List<User> users = userRepository.findAll();
-        int amountOfUsers = users.size();
+        if (expiresAt < currentTime) {
+            GoogleCredential credential = getRefreshedCredentials(user.getRefreshToken());
+            String accessToken = credential.getAccessToken();
 
-        EventAttendee[] attendees = new EventAttendee[amountOfUsers];
-        for (User user : users) {
-            new EventAttendee().setEmail(user.getUserEmail());
+            user.setAccessToken(accessToken);
+            user.setAccessTokenExpiration(currentTime + 3600000);
+
+            userRepository.save(user);
         }
 
-        return attendees;
-    }*/
+        return user;
+    }
 
+    public GoogleCredential getRefreshedCredentials(String refreshCode) {
+        try {
+            GoogleTokenResponse response = new GoogleRefreshTokenRequest(
+                    new NetHttpTransport(), JacksonFactory.getDefaultInstance(), refreshCode,
+                    CLIENT_ID,
+                    CLIENT_SECRET)
+                    .execute();
 
+            return new GoogleCredential().setAccessToken(response.getAccessToken());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
 }
 
 
