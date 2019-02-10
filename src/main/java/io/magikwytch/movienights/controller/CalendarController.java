@@ -98,8 +98,11 @@ public class CalendarController {
             @PathVariable("eTime") String eTime) throws IOException {
 
 
-        System.out.println("I AM INSIDE BOOK MOVIE NIGHT");
-       /* List<User> users = userRepository.getAllByUserIDNotNull();
+        List<Calendar> calendars = new ArrayList<>();
+        List<User> users = userRepository.getAllByUserIDNotNull();
+        for (User user : users) {
+            calendars.add(getUserCalendar(user));
+        }
 
         DateTime start = DateTime.parseRfc3339(sTime);
 
@@ -110,12 +113,11 @@ public class CalendarController {
         event.setAttendees(setEventAttendees(users));
 
         String calendarId = "primary";
-        for (User user : users) {
-            Calendar calendar = getUserCalendar(user);
-            event = calendar.events()
+        for (Calendar calendar : calendars) {
+            calendar.events()
                     .insert(calendarId, event)
                     .execute();
-        }*/
+        }
 
         return new ResponseEntity<>("OK", HttpStatus.OK);
     }
@@ -128,13 +130,11 @@ public class CalendarController {
                 .setDescription("You are invited to a movie night with your friends.");
 
         EventDateTime start = new EventDateTime()
-                .setDateTime(startTime)
-                .setTimeZone("Sweden/Stockholm");
+                .setDateTime(startTime);
         event.setStart(start);
 
         EventDateTime end = new EventDateTime()
-                .setDateTime(endTime)
-                .setTimeZone("Sweden/Stockholm");
+                .setDateTime(endTime);
         event.setEnd(end);
 
         return event;
